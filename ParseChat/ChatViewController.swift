@@ -9,14 +9,25 @@
 import UIKit
 import Parse
 
-class ChatViewController: UIViewController {
+class ChatViewController: UIViewController, UITableViewDelegate, UITableViewDataSource{
 
     @IBOutlet weak var textInputField: UITextField!
+    @IBOutlet weak var tableView: UITableView!
+    
     
     var alertController: UIAlertController!
+    var timer: Timer!
+    var chatMessages: [PFObject] = []
+  
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.onTimer), userInfo: nil, repeats: true)
         
         alertController = UIAlertController(title: "Empty Text Fields", message: "Please enter your message", preferredStyle: .alert)
         
@@ -55,6 +66,42 @@ class ChatViewController: UIViewController {
             }
         }
     }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return chatMessages.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell =
+            self.tableView.dequeueReusableCell(withIdentifier: "MessageCell", for: indexPath) as! MessageCell
+        cell.textLabel?.text = chatMessages[indexPath.row]["text"] as? String
+        /*cell.userLabel.text = messages[indexPath.row]["user"] as? String*/
+        return cell
+        
+    }
+    
+    @objc func onTimer() {
+        // Add code to be run periodically
+        let query = PFQuery(className: "Message")
+        
+        query.getObjectInBackground(withId: "imkmJsHVIH") {
+            (post: PFObject?, error: Error?) -> Void in
+            if error == nil {
+                print(post)
+                if let post = post{
+                    self.chatMessages = [post]
+                    self.tableView.reloadData()
+                }
+            } else {
+                print(error)
+            }
+        }
+        // The getObjectInBackgroundWithId methods are asynchronous, so any code after this will run
+        // immediately.  Any code that depends on the query result should be moved
+        // inside the completion block above.
+        
+    }
+    
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
