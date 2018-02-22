@@ -16,7 +16,6 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     var alertController: UIAlertController!
-    var timer: Timer!
     var chatMessages: [PFObject] = []
   
     
@@ -27,7 +26,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         tableView.delegate = self
         tableView.dataSource = self
         
-        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.onTimer), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.onTimer), userInfo: nil, repeats: true)
         
         alertController = UIAlertController(title: "Empty Text Fields", message: "Please enter your message", preferredStyle: .alert)
         
@@ -84,12 +83,12 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         // Add code to be run periodically
         let query = PFQuery(className: "Message")
         
-        query.getObjectInBackground(withId: "imkmJsHVIH") {
-            (post: PFObject?, error: Error?) -> Void in
+        query.findObjectsInBackground() {
+            (post: [PFObject]?, error: Error?) -> Void in
             if error == nil {
                 print(post)
                 if let post = post{
-                    self.chatMessages = [post]
+                    self.chatMessages = post
                     self.tableView.reloadData()
                 }
             } else {
