@@ -36,15 +36,14 @@ class ViewController: UIViewController {
         alertController.addAction(OKAction)
     }
 
+    
     @IBAction func onSignup(_ sender: Any) {
         if ((usernameLabel.text?.isEmpty)! && (passwordLabel.text?.isEmpty)!) || (usernameLabel.text?.isEmpty)! || (passwordLabel.text?.isEmpty)! {
             present(alertController, animated: true)
         }else {
             registerUser()
         }
-        
     }
-    
     
     @IBAction func onLogin(_ sender: Any) {
         if ((usernameLabel.text?.isEmpty)! && (passwordLabel.text?.isEmpty)!) || (usernameLabel.text?.isEmpty)! || (passwordLabel.text?.isEmpty)! {
@@ -53,9 +52,7 @@ class ViewController: UIViewController {
             loginUser()
         }
     }
-    
 
-    
     func registerUser() {
         let newUser = PFUser()
         newUser.username = usernameLabel.text
@@ -71,10 +68,8 @@ class ViewController: UIViewController {
     }
     
     func loginUser() {
-        
         let username = usernameLabel.text ?? ""
         let password = passwordLabel.text ?? ""
-        
         PFUser.logInWithUsername(inBackground: username, password: password) { (user: PFUser?, error: Error?) in
             if let error = error {
                 print("User log in failed: \(error.localizedDescription)")
@@ -89,7 +84,6 @@ class ViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
 
 }
 

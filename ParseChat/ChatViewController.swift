@@ -13,6 +13,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 
     @IBOutlet weak var textInputField: UITextField!
     @IBOutlet weak var tableView: UITableView!
+
     
     
     var alertController: UIAlertController!
@@ -26,23 +27,25 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         tableView.delegate = self
         tableView.dataSource = self
         
+        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = 200
+        
+        
         Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.onTimer), userInfo: nil, repeats: true)
         
         alertController = UIAlertController(title: "Empty Text Fields", message: "Please enter your message", preferredStyle: .alert)
         
-        // create a cancel action
+
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action) in
-            // handle cancel response here. Doing nothing will dismiss the view.
         }
-        // add the cancel action to the alertController
+
         alertController.addAction(cancelAction)
         
-        // create an OK action
         let OKAction = UIAlertAction(title: "OK", style: .default) { (action) in
-            // handle response here.
+
         }
         alertController.addAction(OKAction)
-        // Do any additional setup after loading the view.
+
     }
     
     @IBAction func onSendMessage(_ sender: Any) {
@@ -56,6 +59,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     func saveMessage() {
         let chatMessage = PFObject(className: "Message")
         chatMessage["text"] = textInputField.text ?? ""
+        chatMessage["user"] = PFUser.current()
         chatMessage.saveInBackground { (success: Bool? , error: Error? ) in
             if success! {
                 print("The message was saved")
@@ -73,33 +77,43 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell =
             self.tableView.dequeueReusableCell(withIdentifier: "MessageCell", for: indexPath) as! MessageCell
-        cell.textLabel?.text = chatMessages[indexPath.row]["text"] as? String
-        /*cell.userLabel.text = messages[indexPath.row]["user"] as? String*/
+        let chatmessage = chatMessages[indexPath.row]
+        cell.messageLabel.text = chatmessage["text"] as? String
+//        cell.messageLabel.text = chatmessage["text"] as? String
+        if let user = chatmessage["user"] as? PFUser {
+            cell.userLabel.text = "\(user["username"]!)"
+            print("USERNAME IS", "\(user["username"]!)" )
+
+        } else {
+            print("No username")
+            cell.userLabel.text = "🤖"
+        }
+//
         return cell
-        
+
     }
     
     @objc func onTimer() {
         // Add code to be run periodically
         let query = PFQuery(className: "Message")
-        
+        query.includeKey("user")
+        query.addDescendingOrder("createdAt")
         query.findObjectsInBackground() {
             (post: [PFObject]?, error: Error?) -> Void in
             if error == nil {
-                print(post)
+                print(post!)
                 if let post = post{
                     self.chatMessages = post
                     self.tableView.reloadData()
                 }
             } else {
-                print(error)
+                print(error!)
             }
         }
-        // The getObjectInBackgroundWithId methods are asynchronous, so any code after this will run
-        // immediately.  Any code that depends on the query result should be moved
-        // inside the completion block above.
+
         
     }
+    
     
     
     override func didReceiveMemoryWarning() {
